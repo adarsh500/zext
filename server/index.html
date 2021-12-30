@@ -64,6 +64,7 @@
     <script src="/socket.io/socket.io.js"></script>
     <script>
       const userName = prompt('enter your nickname');
+      
       var socket = io();
 
       var form = document.getElementById("form");
@@ -73,21 +74,29 @@
       form.addEventListener("submit", function (e) {
         e.preventDefault();
         if (input.value) {
-          socket.emit('chat message', input.value);
+          var messageContent = input.value;
+          socket.emit('chat message', {name: userName, message: messageContent});
           input.value = "";
         }
       });
-      socket.on('newUserConnected', (socketId) => {
+
+      socket.emit('set nickname', userName);
+
+      socket.on('newUserConnected', (user) => {
         var item = document.createElement('li');
-        item.textContent = userName + " just joined";
+        console.log(user);
+        item.textContent = user + " has joined the chat";
         item.style.color = 'green';
         messages.appendChild(item);
         window.scrollTo(0, document.body.scrollHeight);
       })
 
-      socket.on('userDisconnected', (socketId) => {
+
+      // socket.emit('get nickname', userName)
+
+      socket.on('userDisconnected', (name) => {
         var item = document.createElement('li');
-        item.textContent = userName + "just left";
+        item.textContent = name + " has left the chat";
         item.style.color = 'red';
         messages.appendChild(item);
         window.scrollTo(0, document.body.scrollHeight);
@@ -95,9 +104,9 @@
 
 
 
-      socket.on('chat message', (message) => {
+      socket.on('chat message', (payload) => {
         var item = document.createElement('li');
-        item.textContent = message;
+        item.textContent = payload.name + ": " + payload.message;
         messages.appendChild(item);
         window.scrollTo(0, document.body.scrollHeight);
       })

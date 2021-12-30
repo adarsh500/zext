@@ -11,16 +11,22 @@ app.get("/", (req, res) => {
 
 io.on('connection', (socket) => {
   console.log("a user connected with id " + socket.id);
-  io.emit('newUserConnected', socket.id);
 
-  //
-  socket.on('chat message', (message) => {
-    console.log("message: " + message);
-    io.emit("chat message", message);
+  let userName;
+  socket.on('set nickname', (nickname) => {
+    userName = nickname;
+    // console.log(socket)
+    io.emit('newUserConnected', nickname);
+  })
+
+  socket.on("chat message", (payload) => {
+    console.log(payload);
+    io.emit("chat message", { name: payload.name, message: payload.message});
   });
 
+
   socket.on('disconnect', () => {
-    io.emit('userDisconnected', socket.id);
+    io.emit('userDisconnected', userName);
     console.log(socket.id + " disconnected");
   })
 
